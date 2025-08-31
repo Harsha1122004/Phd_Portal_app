@@ -1,4 +1,3 @@
-// api/server.js
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -18,6 +17,7 @@ let gfsBucket;
 // MongoDB Initialization
 const initializeMongoDB = async () => {
     try {
+        // Correctly reference the environment variable for the connection string
         const mongoUri = process.env.MONGODB_URI;
         if (!mongoUri) {
             console.error("❌ MONGODB_URI environment variable not set.");
@@ -166,10 +166,8 @@ const authenticate = (req, res, next) => {
 };
 
 // All Application Routes
-// I've moved your routes here to keep the file clean.
 app.get("/health", (req, res) => res.status(200).json({ success: true, message: "Server is running" }));
 
-// Auth Routes (example - you should move this to a separate file)
 app.post("/auth/login", async (req, res) => {
     const { regNo, password, role } = req.body;
     try {
@@ -202,7 +200,6 @@ app.post("/auth/login", async (req, res) => {
     }
 });
 
-// Student Routes (example)
 app.get("/student/:regNo", authenticate, async (req, res) => {
     try {
         const { regNo } = req.params;
@@ -220,15 +217,12 @@ app.get("/student/:regNo/research-scholars", authenticate, async (req, res) => {
         const { regNo } = req.params;
         console.log(`Fetching research scholars for regNo: ${regNo}, user: ${JSON.stringify(req.user)}`);
         if (req.user.regNo !== regNo || req.user.role !== "student") return res.status(403).json({ success: false, message: "Unauthorized" });
-
         const scholar = await ResearchScholar.findOne({ regNo }).lean();
         const user = await User.findOne({ regNo, role: "student" }).lean();
-
         if (!scholar || !user) {
             console.log(`⚠️ No scholar or user data found for regNo: ${regNo}`);
             return res.status(404).json({ success: false, message: "No research scholar found for this regNo" });
         }
-
         const enrichedScholar = {
             regNo: scholar.regNo,
             name: scholar.name,
@@ -250,7 +244,6 @@ app.get("/student/:regNo/research-scholars", authenticate, async (req, res) => {
     }
 });
 
-// Upload Routes
 app.post("/uploadResearch", authenticate, upload.single("file"), async (req, res) => {
     try {
         if (!req.file || !req.body.regNo || req.user.regNo !== req.body.regNo || req.user.role !== "student") {
@@ -307,7 +300,6 @@ app.post("/uploadProfilePic", authenticate, upload.single("profilePic"), async (
     }
 });
 
-// Download Route
 app.get("/download/:filename", async (req, res) => {
     try {
         const files = await gfsBucket.find({ filename: req.params.filename }).toArray();
@@ -321,9 +313,7 @@ app.get("/download/:filename", async (req, res) => {
     }
 });
 
-// Final Vercel-specific handler function
 const handler = async (req, res) => {
-    // Check if the MongoDB connection is already initialized.
     if (!mongoose.connection.readyState) {
         try {
             await initializeMongoDB();
@@ -334,5 +324,4 @@ const handler = async (req, res) => {
     app(req, res);
 };
 
-// Export the handler for Vercel
 module.exports = handler;
