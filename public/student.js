@@ -2,13 +2,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem("token");
     if (!token) return window.location.href = "index.html";
 
-    const marksRes = await fetch("/student/view-marks", {
+    // Corrected fetch call with /api prefix
+    const marksRes = await fetch("/api/student/view-marks", {
         headers: { Authorization: `Bearer ${token}` }
     });
     const marksData = await marksRes.json();
     document.getElementById("marksList").innerHTML = marksData.marks.map(m => `<li>${m}</li>`).join("");
 
-    const attendanceRes = await fetch("/student/view-attendance", {
+    // Corrected fetch call with /api prefix
+    const attendanceRes = await fetch("/api/student/view-attendance", {
         headers: { Authorization: `Bearer ${token}` }
     });
     const attendanceData = await attendanceRes.json();
@@ -19,7 +21,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         const title = document.getElementById("title").value;
         const link = document.getElementById("link").value;
 
-        const res = await fetch("/student/upload-research", {
+        // Corrected fetch call with /api prefix
+        const res = await fetch("/api/student/upload-research", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ title, link })
